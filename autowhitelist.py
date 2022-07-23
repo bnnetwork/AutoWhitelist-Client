@@ -24,7 +24,6 @@ try:
 except:
     logger.error("读取whitelist.json失败，请检查文件是否存在或是否损坏")
 
-
 @sio.on('connect')
 def on_connect():
     logger.info('正在注册，请稍后')
@@ -60,7 +59,7 @@ def newMission(data):
         return {"status": "failed", "reason": "player not found"}
     elif respond.status_code == "200":
         playerdata = json.loads(respond.read())
-        whitelist.insert(playerdata)
+        whitelist.append(playerdata)
         whitelistFile.write(whitelist)
 
         return {"status": "success"}
