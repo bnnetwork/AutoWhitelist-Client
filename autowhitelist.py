@@ -67,7 +67,7 @@ def newMission(data):
         with open("whitelist.json", "w", encoding='UTF-8') as f:
             strwhitelist.replace("'", '"')
             f.write(strwhitelist)
-        logger.error("白名单成功")
+        logger.info("白名单添加成功")
         return {"status": "success"}
     else:
         logger.error("白名单添加失败：无法查询玩家信息，请确保网络畅通")
