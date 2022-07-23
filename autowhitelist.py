@@ -1,9 +1,13 @@
 from time import sleep
 import socketio
 from loguru import logger
+import json
 
-secret = "voIao2v4ywPZgosp"
 sio = socketio.Client()
+
+with open("awl.json", "r", encoding='UTF-8') as f:
+    config = json.load(f)
+print(config["secret"])
 
 
 @sio.on('connect')
@@ -23,12 +27,12 @@ def isReg(data):
         logger.error("注册失败：secret不存在")
         sleep(1)
         input("按enter键继续")
-        assert()
+        assert ()
     else:
         logger.error("注册失败：未知错误")
         sleep(1)
         input("按enter键继续")
-        assert()
+        assert ()
 
 
 @sio.on("newMission", namespace='/mission')
