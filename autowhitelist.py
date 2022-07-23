@@ -63,10 +63,11 @@ def newMission(data):
     elif respond.status_code == 200:
         playerdata = json.loads(respond.read())
         whitelist.append(playerdata)
-        strwhitelist = str(whitelist)
         with open("whitelist.json", "w", encoding='UTF-8') as f:
-            strwhitelist.replace("'", '"')
+            strwhitelist = str(whitelist).replace("'", "\"").replace(r"\n", "")
+            print(strwhitelist)
             f.write(strwhitelist)
+            f.close()
         logger.info("白名单添加成功")
         return {"status": "success"}
     else:
