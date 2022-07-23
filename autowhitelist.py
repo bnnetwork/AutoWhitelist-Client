@@ -16,8 +16,19 @@ def on_connect():
 
 @sio.on('register')
 def isReg(data):
-    logger.info("注册成功 ，当前 token 为" + data['token'])
-    pass
+    if data['status'] == "success":
+        logger.info("注册成功 ，当前 token 为" + data['token'])
+        pass
+    elif data['status'] == "failed":
+        logger.error("注册失败：secret不存在")
+        sleep(1)
+        input("按enter键继续")
+        assert()
+    else:
+        logger.error("注册失败：未知错误")
+        sleep(1)
+        input("按enter键继续")
+        assert()
 
 
 @sio.on("newMission", namespace='/mission')
@@ -27,5 +38,5 @@ def newMission(data):
     return "success"
 
 
-sio.connect('wss://127.0.0.1:8080/')
+sio.connect('ws://127.0.0.1:8090/')
 sio.wait()
