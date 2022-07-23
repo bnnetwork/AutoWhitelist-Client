@@ -1,3 +1,4 @@
+import pickle
 from time import sleep
 import socketio
 from loguru import logger
@@ -5,6 +6,7 @@ import json
 import httpx
 
 sio = socketio.Client()
+whitelist = []
 
 try:
     with open("awl.json", "r", encoding='UTF-8') as f:
@@ -14,15 +16,16 @@ except:
     logger.error("读取配置文件失败，请检查配置文件是否存在且格式是否正确")
 
 try:
-    whitelistFile = open("whitelist.json", "r", encoding='UTF-8')
-    whitelist = json.load(whitelistFile)
+    with open("whitelist.json", "r", encoding='UTF-8') as f:
+        whitelist = json.load(f)
     logger.info("读取白名单列表中")
     for i in whitelist:
         logger.info("uuid:" + i['uuid'])
         logger.info("name:" + i['name'])
     logger.info("读取完毕，请确认是否能正确读取")
 except:
-    logger.error("读取whitelist.json失败，请检查文件是否存在或是否损坏")
+    logger.error("读取whitelist.json失败:文件为空，跳过读取步骤")
+
 
 @sio.on('connect')
 def on_connect():
@@ -60,7 +63,8 @@ def newMission(data):
     elif respond.status_code == "200":
         playerdata = json.loads(respond.read())
         whitelist.append(playerdata)
-        whitelistFile.write(whitelist)
+        with open("whitelist.json", "w", encoding='UTF-8') as f:
+            f.write(str(whitelist))
 
         return {"status": "success"}
     else:
