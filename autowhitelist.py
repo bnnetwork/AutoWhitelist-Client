@@ -5,10 +5,23 @@ import json
 
 sio = socketio.Client()
 
-with open("awl.json", "r", encoding='UTF-8') as f:
-    config = json.load(f)
-print(config["secret"])
+try:
+    with open("awl.json", "r", encoding='UTF-8') as f:
+        config = json.load(f)
+    secret = config['secret']
+except:
+    logger.error("读取配置文件失败，请检查配置文件是否存在且格式是否正确")
 
+try:
+    with open("whitelist.json", "r", encoding='UTF-8') as f:
+        whitelist = json.load(f)
+    logger.info("读取白名单列表中")
+    for i in whitelist:
+        logger.info("uuid:" + i['uuid'])
+        logger.info("name:" + i['name'])
+    logger.info("读取完毕，请确认是否能正确读取")
+except:
+    logger.error("读取whitelist.json失败，请检查文件是否存在或是否损坏")
 
 @sio.on('connect')
 def on_connect():
