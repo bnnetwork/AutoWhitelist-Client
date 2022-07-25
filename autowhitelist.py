@@ -14,7 +14,7 @@ try:
     secret = config['secret']
 except:
     logger.error("读取配置文件失败，请检查配置文件是否存在且格式是否正确")
-    assert()
+    assert ()
 
 try:
     with open("whitelist.json", "r", encoding='UTF-8') as f:
@@ -60,10 +60,10 @@ def newMission(data):
     respond = httpx.get("https://api.mojang.com/users/profiles/minecraft/" + id)
     for i in whitelist:
         if i["name"] == id:
-            return {"status": "failed", "reason": "player exist"}
+            return {"status": "failed", "reason": "player exist", "secret": secret}
     if respond.status_code == 204:
         logger.error("白名单添加失败：该玩家不存在")
-        return {"status": "failed", "reason": "player not found"}
+        return {"status": "failed", "reason": "player not found", "secret": secret}
     elif respond.status_code == 200:
         mojangData = json.loads(respond.read())
         playerdata['uuid'] = mojangData['uuid']
@@ -75,10 +75,10 @@ def newMission(data):
             f.write(strwhitelist)
             f.close()
         logger.info("白名单添加成功")
-        return {"status": "success"}
+        return {"status": "success", "secret": secret}
     else:
         logger.error("白名单添加失败：无法查询玩家信息，请确保网络畅通")
-        return {"status": "failed", "reason": "network error"}
+        return {"status": "failed", "reason": "network error", "secret": secret}
 
 
 sio.connect('wss://api.awl.bnnet.com.cn/')
