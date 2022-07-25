@@ -1,4 +1,3 @@
-import pickle
 from time import sleep
 import socketio
 from loguru import logger
@@ -57,6 +56,9 @@ def newMission(data):
     id = data["id"]
     logger.info("新玩家%s已通过入服考试，即将添加白名单" % id)
     respond = httpx.get("https://api.mojang.com/users/profiles/minecraft/" + id)
+    for i in whitelist:
+        if i["name"] == id:
+            return {"status": "failed", "reason": "player exist"}
     if respond.status_code == 204:
         logger.error("白名单添加失败：该玩家不存在")
         return {"status": "failed", "reason": "player not found"}
