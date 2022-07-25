@@ -14,6 +14,7 @@ try:
     secret = config['secret']
 except:
     logger.error("读取配置文件失败，请检查配置文件是否存在且格式是否正确")
+    assert()
 
 try:
     with open("whitelist.json", "r", encoding='UTF-8') as f:
