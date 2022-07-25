@@ -67,7 +67,7 @@ def newMission(data):
     elif respond.status_code == 200:
         mojangData = json.loads(respond.read())
         playerdata['uuid'] = mojangData['uuid']
-        playerdata['name'] = mojangData['name']
+        playerdata['name'] = mojangData['id']
         whitelist.append(playerdata)
         with open("whitelist.json", "w", encoding='UTF-8') as f:
             strwhitelist = str(whitelist).replace("'", "\"").replace(r"\n", "")
