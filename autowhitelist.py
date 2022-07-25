@@ -6,6 +6,7 @@ import httpx
 
 sio = socketio.Client()
 whitelist = []
+playerdata = {}
 
 try:
     with open("awl.json", "r", encoding='UTF-8') as f:
@@ -63,7 +64,9 @@ def newMission(data):
         logger.error("白名单添加失败：该玩家不存在")
         return {"status": "failed", "reason": "player not found"}
     elif respond.status_code == 200:
-        playerdata = json.loads(respond.read())
+        mojangData = json.loads(respond.read())
+        playerdata['uuid'] = mojangData['uuid']
+        playerdata['name'] = mojangData['name']
         whitelist.append(playerdata)
         with open("whitelist.json", "w", encoding='UTF-8') as f:
             strwhitelist = str(whitelist).replace("'", "\"").replace(r"\n", "")
