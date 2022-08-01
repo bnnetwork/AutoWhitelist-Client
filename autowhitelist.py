@@ -3,6 +3,7 @@ import socketio
 from loguru import logger
 import json
 import httpx
+import uuid
 
 sio = socketio.Client()
 whitelist = []
@@ -12,6 +13,7 @@ try:
     with open("awl.json", "r", encoding='UTF-8') as f:
         config = json.load(f)
     secret = config['secret']
+    isOnline = config['isOnline']
 except:
     logger.error("读取配置文件失败，请检查配置文件是否存在且格式是否正确")
     assert ()
@@ -57,29 +59,35 @@ def isReg(data):
 def newMission(data):
     id = data["id"]
     logger.info("新玩家%s已通过入服考试，即将添加白名单" % id)
-    respond = httpx.get("https://api.mojang.com/users/profiles/minecraft/" + id)
-    for i in whitelist:
-        if i["name"] == id:
-            return {"status": "failed", "reason": "player exist", "secret": secret}
-    if respond.status_code == 204:
-        logger.error("白名单添加失败：该玩家不存在")
-        return {"status": "failed", "reason": "player not found", "secret": secret}
-    elif respond.status_code == 200:
-        mojangData = json.loads(respond.read())
-        playerdata['uuid'] = mojangData['uuid']
-        playerdata['name'] = mojangData['id']
-        whitelist.append(playerdata)
-        with open("whitelist.json", "w", encoding='UTF-8') as f:
-            strwhitelist = str(whitelist).replace("'", "\"").replace(r"\n", "")
-            print(strwhitelist)
-            f.write(strwhitelist)
-            f.close()
-        logger.info("白名单添加成功")
-        return {"status": "success", "secret": secret}
+    if isOnline == "True":
+        respond = httpx.get("https://api.mojang.com/users/profiles/minecraft/" + id)
+        for i in whitelist:
+            if i["name"] == id:
+                return {"status": "failed", "reason": "player exist", "secret": secret}
+        if respond.status_code == 204:
+            logger.error("白名单添加失败：该玩家不存在")
+            return {"status": "failed", "reason": "player not found", "secret": secret}
+        elif respond.status_code == 200:
+            mojangData = json.loads(respond.read())
+            playerdata['uuid'] = mojangData['uuid']
+            playerdata['name'] = mojangData['id']
+            whitelist.append(playerdata)
+    elif isOnline == "False":
+        playerdata['uuid'] = str(uuid.uuid4())
+        playerdata['name'] = id
+
     else:
         logger.error("白名单添加失败：无法查询玩家信息，请确保网络畅通")
         return {"status": "failed", "reason": "network error", "secret": secret}
 
+    with open("whitelist.json", "w", encoding='UTF-8') as f:
+        strwhitelist = str(whitelist).replace("'", "\"").replace(r"\n", "")
+        print(strwhitelist)
+        f.write(strwhitelist)
+        f.close()
+    logger.info("白名单添加成功")
+    return {"status": "success", "secret": secret}
 
-sio.connect('wss://api.awl.bnnet.com.cn/')
+
+sio.connect('ws://127.0.0.1:8090/')
 sio.wait()
