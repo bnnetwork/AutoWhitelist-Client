@@ -79,7 +79,7 @@ def newMission(data):
     else:
         logger.error("白名单添加失败：无法查询玩家信息，请确保网络畅通")
         return {"status": "failed", "reason": "network error", "secret": secret}
-
+    
     with open("whitelist.json", "w", encoding='UTF-8') as f:
         strwhitelist = str(whitelist).replace("'", "\"").replace(r"\n", "")
         print(strwhitelist)
@@ -89,5 +89,5 @@ def newMission(data):
     return {"status": "success", "secret": secret}
 
 
-sio.connect('ws://127.0.0.1:8090/')
+sio.connect('wss://api.bnnet.com.cn/')
 sio.wait()
