@@ -89,5 +89,5 @@ def newMission(data):
     return {"status": "success", "secret": secret}
 
 
-sio.connect('wss://api.bnnet.com.cn/')
+sio.connect('wss://api.awl.bnnet.com.cn/')
 sio.wait()
