@@ -6,6 +6,9 @@ import httpx
 import uuid
 
 sio = socketio.Client()
+sio.eio.ping_interval = 30
+sio.eio.ping_timeout = 30
+
 whitelist = []
 playerdata = {}
 
