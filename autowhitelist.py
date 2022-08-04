@@ -4,6 +4,7 @@ from loguru import logger
 import json
 import httpx
 import uuid
+version = "v0.0.3"
 
 sio = socketio.Client()
 sio.eio.ping_interval = 30
@@ -11,6 +12,17 @@ sio.eio.ping_timeout = 30
 
 whitelist = []
 playerdata = {}
+
+try:
+    logger.info("正在检测是否有新版本，请稍后")
+    latest = json.loads(httpx.get("https://api.github.com/repos/zhishixiang/AutoWhitelist-Client/releases/latest").read())
+    latest_version = latest["tag_name"]
+    if latest_version == version:
+        logger.info("当前已为最新版本")
+    else:
+        logger.info("有新版本可下载，请前往GitHub下载")
+except:
+    logger.error("无法连接GitHub，请检查网络")
 
 try:
     with open("awl.json", "r", encoding='UTF-8') as f:
