@@ -4,7 +4,7 @@ from loguru import logger
 import json
 import httpx
 import uuid
-version = "v0.0.3"
+version = "v0.0.4"
 
 sio = socketio.Client()
 sio.eio.ping_interval = 30
