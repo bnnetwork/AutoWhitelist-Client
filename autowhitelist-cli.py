@@ -94,9 +94,10 @@ async def newMission(data, websocket):
     player_not_exist = True
     for i in whitelist:
         if i["name"] == ID:
-            logger.error("白名单添加失败：该ID已存在")
+            logger.error("白名单添加失败：该玩家已被添加")
             await websocket.send(
-                str({"event": "callback", "status": "failed", "reason": "player exist", "secret": secret, "eventID": event_id}))
+                str({"event": "callback", "status": "failed", "reason": "player already added", "secret": secret, "eventID": event_id}))
+            logger.info("已发送回调，正在等待服务器确认收到")
             player_not_exist = False
             break
     if isOnline == "True":
@@ -106,10 +107,19 @@ async def newMission(data, websocket):
                 logger.error("白名单添加失败：该玩家不存在")
                 await websocket.send(
                     str({"event": "callback", "status": "failed", "reason": "player not found", "secret": secret, "eventID": event_id}))
+                logger.info("已发送回调，正在等待服务器确认收到")
             elif respond.status_code == 200:
                 mojangData = json.loads(respond.read())
                 playerdata['uuid'] = mojangData['id']
                 playerdata['name'] = mojangData['name']
+                for i in whitelist:
+                    if i["uuid"] == playerdata['uuid']:
+                        logger.error("白名单添加失败：该玩家已被添加")
+                        await websocket.send(
+                            str({"event": "callback", "status": "failed", "reason": "player already added", "secret": secret, "eventID": event_id}))
+                        logger.info("已发送回调，正在等待服务器确认收到")
+                        player_not_exist = False
+                        break
                 whitelist.append(playerdata)
     elif isOnline == "False":
         if player_not_exist:
@@ -129,6 +139,20 @@ async def newMission(data, websocket):
             f.close()
         logger.info("白名单添加成功")
         await websocket.send(str({"event": "callback", "status": "success", "secret": secret, "eventID": event_id}))
+        logger.info("已发送回调，正在等待服务器确认收到")
+    resp = await websocket.recv()
+    json_resp = eval(resp)
+    for i in range(5):
+        if json_resp["event"] == "callback" and json_resp["status"] == "received":
+            logger.info("已确认服务器已收到回调")
+            break
+        elif i == 4:
+            logger.error("服务器未收到回调，请检查服务器是否正常运行")
+            break
+        else:
+            logger.info("未能确认服务器已收到回调，正在重试")
+            sleep(3)
+
 
 
 asyncio.get_event_loop().run_until_complete(start())
