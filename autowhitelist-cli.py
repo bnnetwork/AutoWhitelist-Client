@@ -49,45 +49,46 @@ except:
 
 
 async def start():
-    uri = "ws://localhost:8090"
-    try:
-        async with ws.connect(uri) as websocket:
-            logger.info("正在尝试注册，请稍后...")
-            await websocket.send(str({"event": "register", "secret": "114514"}))
-            not_registed = True
-            while not_registed:
-                try:
-                    response_str = await websocket.recv()
-                    json_data = eval(response_str)
-                    if json_data["event"] == "register":
-                        logger.info("注册成功，开始接收请求")
-                        not_registed = False
-                        while True:
-                            recv = await websocket.recv()
-                            if recv == 1000:
-                                pass
-                            else:
-                                json_data = eval(recv)
-                                if json_data["event"] == "newMission":
-                                    data["ID"] = json_data["ID"]
-                                    await newMission(data, websocket)
-                except ConnectionClosed as e:
-                    print(e.code)
-                    if e.code == 1006:
-                        logger.error("断开连接，正在尝试重连...")
-                        await asyncio.sleep(2)
-                        break
-    except ConnectionRefusedError as e:
-        print(e)
-        global count
-        if count == 10:
-            return
-        count += 1
-        await asyncio.sleep(2)
+    while True:
+        uri = "ws://localhost:8090"
+        try:
+            async with ws.connect(uri) as websocket:
+                logger.info("正在尝试注册，请稍后...")
+                await websocket.send(str({"event": "register", "secret": "114514"}))
+                not_registed = True
+                while not_registed:
+                    try:
+                        response_str = await websocket.recv()
+                        json_data = eval(response_str)
+                        if json_data["event"] == "register":
+                            logger.info("注册成功，开始接收请求")
+                            not_registed = False
+                            while True:
+                                recv = await websocket.recv()
+                                if recv == 1000:
+                                    pass
+                                else:
+                                    json_data = eval(recv)
+                                    if json_data["event"] == "newMission":
+                                        await newMission(json_data, websocket)
+                    except ConnectionClosed as e:
+                        print(e.code)
+                        if e.code == 1006:
+                            logger.error("断开连接，正在尝试重连...")
+                            await asyncio.sleep(2)
+                            break
+        except ConnectionRefusedError as e:
+            print(e)
+            global count
+            if count == 10:
+                return
+            count += 1
+            await asyncio.sleep(2)
 
 
 async def newMission(data, websocket):
     ID = data["ID"]
+    print(data)
     event_id = data["eventID"]
     logger.info("新玩家%s已通过入服考试，即将添加白名单，事件ID:%s" % (ID, event_id))
     player_not_exist = True
@@ -95,7 +96,7 @@ async def newMission(data, websocket):
         if i["name"] == ID:
             logger.error("白名单添加失败：该ID已存在")
             await websocket.send(
-                str({"status": "failed", "reason": "player exist", "secret": secret, "eventID": event_id}))
+                str({"event": "callback", "status": "failed", "reason": "player exist", "secret": secret, "eventID": event_id}))
             player_not_exist = False
             break
     if isOnline == "True":
@@ -104,7 +105,7 @@ async def newMission(data, websocket):
             if respond.status_code == 204:
                 logger.error("白名单添加失败：该玩家不存在")
                 await websocket.send(
-                    str({"status": "failed", "reason": "player not found", "secret": secret, "eventID": event_id}))
+                    str({"event": "callback", "status": "failed", "reason": "player not found", "secret": secret, "eventID": event_id}))
             elif respond.status_code == 200:
                 mojangData = json.loads(respond.read())
                 playerdata['uuid'] = mojangData['id']
@@ -119,14 +120,15 @@ async def newMission(data, websocket):
     else:
         logger.error("白名单添加失败：无法查询玩家信息，请确保网络畅通")
         await websocket.send(
-            str({"status": "failed", "reason": "network error", "secret": secret, "eventID": event_id}))
+            str({"event": "callback", "status": "failed", "reason": "network error", "secret": secret,
+                 "eventID": event_id}))
     if player_not_exist:
         with open("whitelist.json", "w", encoding='UTF-8') as f:
             strwhitelist = str(whitelist).replace("'", "\"").replace(r"\n", "")
             f.write(strwhitelist)
             f.close()
         logger.info("白名单添加成功")
-        await websocket.send(str({"status": "success", "secret": secret, "eventID": event_id}))
+        await websocket.send(str({"event": "callback", "status": "success", "secret": secret, "eventID": event_id}))
 
 
 asyncio.get_event_loop().run_until_complete(start())
