@@ -50,17 +50,17 @@ except:
 
 async def start():
     while True:
-        uri = "ws://localhost:8090"
+        uri = "wss://api.awl.bnnet.com.cn"
         try:
             async with ws.connect(uri) as websocket:
                 logger.info("正在尝试注册，请稍后...")
-                await websocket.send(str({"event": "register", "secret": "114514"}))
+                await websocket.send(str({"event": "register", "secret": secret}))
                 not_registed = True
                 while not_registed:
                     try:
                         response_str = await websocket.recv()
                         json_data = eval(response_str)
-                        if json_data["event"] == "register":
+                        if json_data["event"] == "register" and json_data["status"] == "success":
                             logger.info("注册成功，开始接收请求")
                             not_registed = False
                             while True:
@@ -71,6 +71,12 @@ async def start():
                                     json_data = eval(recv)
                                     if json_data["event"] == "newMission":
                                         await newMission(json_data, websocket)
+                        elif json_data["event"] == "register" and json_data["status"] == "failed" and json_data["reason"] == "not registered":
+                            logger.error("注册失败：该secret未注册")
+                            assert()
+                        else:
+                            logger.error("注册失败：未知错误")
+                            assert()
                     except ConnectionClosed as e:
                         print(e.code)
                         if e.code == 1006:
