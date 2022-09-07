@@ -88,20 +88,23 @@ async def start():
 
 async def newMission(data, websocket):
     ID = data["ID"]
-    logger.info("新玩家%s已通过入服考试，即将添加白名单" % ID)
+    event_id = data["eventID"]
+    logger.info("新玩家%s已通过入服考试，即将添加白名单，事件ID:%s" % (ID, event_id))
     player_not_exist = True
     for i in whitelist:
         if i["name"] == ID:
             logger.error("白名单添加失败：该ID已存在")
-            await websocket.send(str({"status": "failed", "reason": "player exist", "secret": secret}))
-            player_not_exist == False
+            await websocket.send(
+                str({"status": "failed", "reason": "player exist", "secret": secret, "eventID": event_id}))
+            player_not_exist = False
             break
     if isOnline == "True":
         respond = httpx.get("https://api.mojang.com/users/profiles/minecraft/" + ID)
         if player_not_exist:
             if respond.status_code == 204:
                 logger.error("白名单添加失败：该玩家不存在")
-                await websocket.send(str({"status": "failed", "reason": "player not found", "secret": secret}))
+                await websocket.send(
+                    str({"status": "failed", "reason": "player not found", "secret": secret, "eventID": event_id}))
             elif respond.status_code == 200:
                 mojangData = json.loads(respond.read())
                 playerdata['uuid'] = mojangData['id']
@@ -115,14 +118,15 @@ async def newMission(data, websocket):
 
     else:
         logger.error("白名单添加失败：无法查询玩家信息，请确保网络畅通")
-        await websocket.send(str({"status": "failed", "reason": "network error", "secret": secret}))
+        await websocket.send(
+            str({"status": "failed", "reason": "network error", "secret": secret, "eventID": event_id}))
     if player_not_exist:
         with open("whitelist.json", "w", encoding='UTF-8') as f:
             strwhitelist = str(whitelist).replace("'", "\"").replace(r"\n", "")
             f.write(strwhitelist)
             f.close()
         logger.info("白名单添加成功")
-        await websocket.send(str({"status": "success", "secret": secret}))
+        await websocket.send(str({"status": "success", "secret": secret, "eventID": event_id}))
 
 
 asyncio.get_event_loop().run_until_complete(start())
