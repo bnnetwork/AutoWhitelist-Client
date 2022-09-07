@@ -23,7 +23,7 @@ try:
         logger.info("当前已为最新版本")
     else:
         logger.info("有新版本可下载，请前往GitHub下载")
-        logger.info("更新内容摘要:"+latest_description)
+        logger.info("更新内容摘要:" + latest_description)
 except:
     logger.error("无法访问GitHub，请检查网络")
 
@@ -50,45 +50,43 @@ except:
 
 async def start():
     uri = "ws://localhost:8090"
-    while True:
-        try:
-            async with ws.connect(uri) as websocket:
-                logger.info("正在尝试注册，请稍后...")
-                await websocket.send(str({"event": "register", "secret": "114514"}))
-                not_registed = True
-                while not_registed:
-                    try:
-                        response_str = await websocket.recv()
-                        json_data = eval(response_str)
-                        if json_data["event"] == "register":
-                            logger.info("注册成功，开始接收请求")
-                            not_registed = False
-                            while True:
-                                recv = await websocket.recv()
-                                if recv == 1000:
-                                    pass
-                                else:
-                                    json_data = eval(recv)
-                                    if json_data["event"] == "newMission":
-                                        data["ID"] = json_data["ID"]
-                                        await newMission(data,websocket)
-                                    pass
-                    except ConnectionClosed as e:
-                        print(e.code)
-                        if e.code == 1006:
-                            logger.error("断开连接，正在尝试重连...")
-                            await asyncio.sleep(2)
-                            break
-        except ConnectionRefusedError as e:
-            print(e)
-            global count
-            if count == 10:
-                return
-            count += 1
-            await asyncio.sleep(2)
+    try:
+        async with ws.connect(uri) as websocket:
+            logger.info("正在尝试注册，请稍后...")
+            await websocket.send(str({"event": "register", "secret": "114514"}))
+            not_registed = True
+            while not_registed:
+                try:
+                    response_str = await websocket.recv()
+                    json_data = eval(response_str)
+                    if json_data["event"] == "register":
+                        logger.info("注册成功，开始接收请求")
+                        not_registed = False
+                        while True:
+                            recv = await websocket.recv()
+                            if recv == 1000:
+                                pass
+                            else:
+                                json_data = eval(recv)
+                                if json_data["event"] == "newMission":
+                                    data["ID"] = json_data["ID"]
+                                    await newMission(data, websocket)
+                except ConnectionClosed as e:
+                    print(e.code)
+                    if e.code == 1006:
+                        logger.error("断开连接，正在尝试重连...")
+                        await asyncio.sleep(2)
+                        break
+    except ConnectionRefusedError as e:
+        print(e)
+        global count
+        if count == 10:
+            return
+        count += 1
+        await asyncio.sleep(2)
 
 
-async def newMission(data,websocket):
+async def newMission(data, websocket):
     ID = data["ID"]
     logger.info("新玩家%s已通过入服考试，即将添加白名单" % ID)
     player_not_exist = True
