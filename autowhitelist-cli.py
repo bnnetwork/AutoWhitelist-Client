@@ -12,6 +12,7 @@ version = "v0.0.5"
 whitelist = []
 playerdata = {}
 data = {}
+server_name = ""
 
 try:
     logger.info("正在检测是否有新版本，请稍后")
@@ -50,7 +51,7 @@ except:
 
 async def start(url):
      async with websockets.connect(url) as websocket:
-        await websocket.send("123456")
+        await websocket.send("1145141919810")
         try:
             recv_text = await websocket.recv()
         except websockets.exceptions.ConnectionClosedError as e:
@@ -58,8 +59,10 @@ async def start(url):
                 logger.error("密钥错误，请再次检查")
             sys.exit(1)
 
-        if recv_text == "ok":
-            print(recv_text)
+        data = eval(recv_text)
+        if data["code"] == 1:
+            server_name = data["server_name"]
+            logger.success("连接成功，服务器%s已上线"%server_name)
         for i in range(0,5):
             await websocket.send("hello")
         await websocket.close()
