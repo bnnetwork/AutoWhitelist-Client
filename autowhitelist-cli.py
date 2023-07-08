@@ -6,6 +6,7 @@ import httpx
 import uuid
 import asyncio
 import sys
+import traceback
 
 version = "v0.0.5"
 
@@ -63,10 +64,19 @@ async def start(url):
         if data["code"] == 1:
             server_name = data["server_name"]
             logger.success("连接成功，服务器%s已上线"%server_name)
-        for i in range(0,5):
-            await websocket.send("hello")
-        await websocket.close()
-
+        while True:
+            recv_text = await websocket.recv()
+            data = eval(recv_text)
+            try:
+                if data["code"] == 2:
+                    player_name = data["player_name"]
+                    logger.info("新玩家%s已通过答题，正在添加白名单"%player_name)
+                    logger.success("新玩家%s添加成功"%player_name)
+                    await websocket.send(json.dumps({"code":2,"message":"success"}))
+            except:
+                await websocket.send(json.dumps({"code":-2,"message":"failed"}))
+                logger.error("玩家%s添加失败，请复制以下信息联系开发者处理"%player_name)
+                traceback.print_exc()
 
 
 asyncio.get_event_loop().run_until_complete(start("ws://127.0.0.1:8765"))
