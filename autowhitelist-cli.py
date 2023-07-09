@@ -57,7 +57,8 @@ async def start(url):
             recv_text = await websocket.recv()
         except websockets.exceptions.ConnectionClosedError as e:
             if(eval(e.reason)["code"] == -1):
-                logger.error("密钥错误，请再次检查")
+                logger.critical("密钥错误，请再次检查")
+                input("按Enter键退出")
             sys.exit(1)
 
         data = eval(recv_text)
