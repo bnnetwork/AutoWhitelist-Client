@@ -59,8 +59,11 @@ async def start(url):
             if(eval(e.reason)["code"] == -1):
                 logger.critical("密钥错误，请再次检查")
                 input("按Enter键退出")
-            sys.exit(1)
-
+                sys.exit(1)
+            elif(eval(e.reason)["code"] == -2):
+                logger.critical("客户端重复连接，请勿同时运行两个客户端")
+                input("按Enter键退出")
+                sys.exit(1)
         data = eval(recv_text)
         if data["code"] == 1:
             server_name = data["server_name"]
