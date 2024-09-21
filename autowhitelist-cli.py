@@ -14,7 +14,7 @@ whitelist = []
 playerdata = {}
 data = {}
 server_name = ""
-
+"""
 try:
     logger.info("正在检测是否有新版本，请稍后")
     latest = json.loads(
@@ -32,12 +32,11 @@ except:
 try:
     with open("awl.json", "r", encoding='UTF-8') as f:
         config = json.load(f)
-    secret = config['secret']
+    key = config['key']
     isOnline = config['isOnline']
 except:
     logger.error("读取配置文件失败，请检查配置文件是否存在且格式是否正确")
     assert ()
-"""
 try:
     with open("whitelist.json", "r", encoding='UTF-8') as f:
         whitelist = json.load(f)
@@ -51,30 +50,64 @@ except:
 
 
 async def start(url):
-     async with websockets.connect(url) as websocket:
-        await websocket.send("1145141919810")
-        try:
-            recv_text = await websocket.recv()
-        except websockets.exceptions.ConnectionClosedError as e:
-            if(eval(e.reason)["code"] == -1):
-                logger.critical("密钥错误，请再次检查")
-                input("按Enter键退出")
-                sys.exit(1)
-            elif(eval(e.reason)["code"] == -2):
-                logger.critical("客户端重复连接，请勿同时运行两个客户端")
-                input("按Enter键退出")
-                sys.exit(1)
+    async with websockets.connect(url) as websocket:
+        await websocket.send(json.dumps({"code":0,"key":key}))
+        recv_text = await websocket.recv()
         data = eval(recv_text)
-        if data["code"] == 1:
+        if(data["code"] == -1):
+            logger.critical("密钥错误，请再次检查")
+            input("按Enter键退出")
+            sys.exit(1)
+        elif(data["code"] == -2):
+            logger.critical("客户端重复连接，请勿同时运行两个客户端")
+            input("按Enter键退出")
+            sys.exit(1)
+        elif data["code"] == 1:
             server_name = data["server_name"]
             logger.success("连接成功，服务器%s已上线"%server_name)
+        else:
+            logger.error("未知的响应："+recv_text)
+            input("按Enter键退出")
+            sys.exit(1)
         while True:
             recv_text = await websocket.recv()
             data = eval(recv_text)
             try:
                 if data["code"] == 2:
-                    player_name = data["player_name"]
+                    player_name = data["msg"]
                     logger.info("新玩家%s已通过答题，正在添加白名单"%player_name)
+                    player_not_exist = True
+                    for i in whitelist:
+                        if i["name"] == player_name:
+                            logger.error("白名单添加失败：该玩家已被添加")
+                            player_not_exist = False
+                            break
+                    if isOnline == "True":
+                        respond = httpx.get("https://api.mojang.com/users/profiles/minecraft/" + player_name)
+                        if player_not_exist:
+                            if respond.status_code == 204:
+                                logger.error("白名单添加失败：该玩家不存在")
+                                break
+                            elif respond.status_code == 200:
+                                mojangData = json.loads(respond.read())
+                                playerdata['uuid'] = mojangData['id']
+                                playerdata['name'] = mojangData['name']
+                                for i in whitelist:
+                                    if i["uuid"] == playerdata['uuid']:
+                                        logger.error("白名单添加失败：该玩家已被添加")
+                                        break
+                                whitelist.append(playerdata)
+                    elif isOnline == "False":
+                        if player_not_exist:
+                            playerdata['uuid'] = str(uuid.uuid4())
+                            playerdata['name'] = player_name
+                            whitelist.append(playerdata)
+                    if player_not_exist:
+                        with open("whitelist.json", "w", encoding='UTF-8') as f:
+                            strwhitelist = str(whitelist).replace("'", "\"").replace(r"\n", "")
+                            f.write(strwhitelist)
+                            f.close()
+                        logger.info("白名单添加成功")
                     logger.success("新玩家%s添加成功"%player_name)
                     await websocket.send(json.dumps({"code":2,"message":"success"}))
             except:
@@ -83,4 +116,4 @@ async def start(url):
                 traceback.print_exc()
 
 
-asyncio.get_event_loop().run_until_complete(start("ws://127.0.0.1:8765"))
+asyncio.get_event_loop().run_until_complete(start("wss://awl.toho.red/ws"))
