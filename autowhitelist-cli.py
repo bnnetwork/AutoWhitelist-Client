@@ -50,70 +50,78 @@ except:
 
 
 async def start(url):
-    async with websockets.connect(url) as websocket:
-        await websocket.send(json.dumps({"code":0,"key":key}))
-        recv_text = await websocket.recv()
-        data = eval(recv_text)
-        if(data["code"] == -1):
-            logger.critical("密钥错误，请再次检查")
-            input("按Enter键退出")
-            sys.exit(1)
-        elif(data["code"] == -2):
-            logger.critical("客户端重复连接，请勿同时运行两个客户端")
-            input("按Enter键退出")
-            sys.exit(1)
-        elif data["code"] == 1:
-            server_name = data["server_name"]
-            logger.success("连接成功，服务器%s已上线"%server_name)
-        else:
-            logger.error("未知的响应："+recv_text)
-            input("按Enter键退出")
-            sys.exit(1)
-        while True:
-            recv_text = await websocket.recv()
-            data = eval(recv_text)
-            try:
-                if data["code"] == 2:
-                    player_name = data["msg"]
-                    logger.info("新玩家%s已通过答题，正在添加白名单"%player_name)
-                    player_not_exist = True
-                    for i in whitelist:
-                        if i["name"] == player_name:
-                            logger.error("白名单添加失败：该玩家已被添加")
-                            player_not_exist = False
-                            break
-                    if isOnline == "True":
-                        respond = httpx.get("https://api.mojang.com/users/profiles/minecraft/" + player_name)
-                        if player_not_exist:
-                            if respond.status_code == 204:
-                                logger.error("白名单添加失败：该玩家不存在")
-                                break
-                            elif respond.status_code == 200:
-                                mojangData = json.loads(respond.read())
-                                playerdata['uuid'] = mojangData['id']
-                                playerdata['name'] = mojangData['name']
-                                for i in whitelist:
-                                    if i["uuid"] == playerdata['uuid']:
-                                        logger.error("白名单添加失败：该玩家已被添加")
+    while True:
+        try:
+            async with websockets.connect(url) as websocket:
+                await websocket.send(json.dumps({"code":0,"key":key}))
+                recv_text = await websocket.recv()
+                data = eval(recv_text)
+                if(data["code"] == -1):
+                    logger.critical("密钥错误，请再次检查")
+                    input("按Enter键退出")
+                    sys.exit(1)
+                elif(data["code"] == -2):
+                    logger.critical("客户端重复连接，请勿同时运行两个客户端")
+                    input("按Enter键退出")
+                    sys.exit(1)
+                elif data["code"] == 1:
+                    server_name = data["server_name"]
+                    logger.success("连接成功，服务器%s已上线"%server_name)
+                else:
+                    logger.error("未知的响应："+recv_text)
+                    input("按Enter键退出")
+                    sys.exit(1)
+                while True:
+                    recv_text = await websocket.recv()
+                    data = eval(recv_text)
+                    try:
+                        if data["code"] == 2:
+                            player_name = data["msg"]
+                            logger.info("新玩家%s已通过答题，正在添加白名单"%player_name)
+                            player_not_exist = True
+                            for i in whitelist:
+                                if i["name"] == player_name:
+                                    logger.error("白名单添加失败：该玩家已被添加")
+                                    player_not_exist = False
+                                    break
+                            if isOnline == "True":
+                                respond = httpx.get("https://api.mojang.com/users/profiles/minecraft/" + player_name)
+                                if player_not_exist:
+                                    if respond.status_code == 204:
+                                        logger.error("白名单添加失败：该玩家不存在")
                                         break
-                                whitelist.append(playerdata)
-                    elif isOnline == "False":
-                        if player_not_exist:
-                            playerdata['uuid'] = str(uuid.uuid4())
-                            playerdata['name'] = player_name
-                            whitelist.append(playerdata)
-                    if player_not_exist:
-                        with open("whitelist.json", "w", encoding='UTF-8') as f:
-                            strwhitelist = str(whitelist).replace("'", "\"").replace(r"\n", "")
-                            f.write(strwhitelist)
-                            f.close()
-                        logger.info("白名单添加成功")
-                    logger.success("新玩家%s添加成功"%player_name)
-                    await websocket.send(json.dumps({"code":2,"message":"success"}))
-            except:
-                await websocket.send(json.dumps({"code":-2,"message":"failed"}))
-                logger.error("玩家%s添加失败，请复制以下信息联系开发者处理"%player_name)
-                traceback.print_exc()
+                                    elif respond.status_code == 200:
+                                        mojangData = json.loads(respond.read())
+                                        playerdata['uuid'] = mojangData['id']
+                                        playerdata['name'] = mojangData['name']
+                                        for i in whitelist:
+                                            if i["uuid"] == playerdata['uuid']:
+                                                logger.error("白名单添加失败：该玩家已被添加")
+                                                break
+                                        whitelist.append(playerdata)
+                            elif isOnline == "False":
+                                if player_not_exist:
+                                    playerdata['uuid'] = str(uuid.uuid4())
+                                    playerdata['name'] = player_name
+                                    whitelist.append(playerdata)
+                            if player_not_exist:
+                                with open("whitelist.json", "w", encoding='UTF-8') as f:
+                                    strwhitelist = str(whitelist).replace("'", "\"").replace(r"\n", "")
+                                    f.write(strwhitelist)
+                                    f.close()
+                                logger.info("白名单添加成功")
+                            logger.success("新玩家%s添加成功"%player_name)
+                            await websocket.send(json.dumps({"code":2,"message":"success"}))
+                    except:
+                        await websocket.send(json.dumps({"code":-2,"message":"failed"}))
+                        logger.error("玩家%s添加失败，请复制以下信息联系开发者处理"%player_name)
+                        traceback.print_exc()
+        except websockets.exceptions.ConnectionClosedError:
+            logger.error("WebSocket连接已关闭，正在尝试重新连接...")
+            await asyncio.sleep(5)
+        except Exception as e:
+            logger.error(f"发生错误：{e}，正在尝试重新连接...")
+            await asyncio.sleep(5)
 
 
 asyncio.get_event_loop().run_until_complete(start("wss://awl.toho.red/ws"))
