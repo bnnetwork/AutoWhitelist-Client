@@ -11,9 +11,11 @@ PLUGIN_METADATA = {
     "description": "Automaticly add whitelist by tests",
     "author": "zsx",
 }
-key = "1"
-url = "wss://awl.toho.red/ws"
-server_thread = None
+CONFIG_FILE = 'config/awl.json'
+
+class Config(Serializable):
+    key: str = None
+    url: str = "wss://awl.toho.red/ws"
 
 """
 try:
@@ -34,6 +36,8 @@ def kill_server(server):
     server.logger.info("autowhitelist正在停止服务...")
 
 async def start(server):
+    key = server.key
+    url = server.url
     while True:
         try:
             async with websockets.connect(url) as websocket:
@@ -75,18 +79,19 @@ async def start(server):
             await asyncio.sleep(5)
 
 @new_thread('Autowhitelist Client Thread')
-def start_thread(server):
+def start_thread(server,config):
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     try:
-        loop.run_until_complete(start(server))
+        loop.run_until_complete(start(server,config))
     finally:
         loop.close()
 
 def on_load(server: ServerInterface, old):
-    server.logger.info("autowhitelist已被加载，正在等待服务启动...")
+    server.logger.info("autowhitelist已被加载，正在等待线程启动...")
+    config = server.load_config_simple(CONFIG_FILE, target_class=Config, in_data_folder=False)
     global server_thread
-    server_thread = start_thread(server)
+    server_thread = start_thread(server,config)
 
 def on_server_stop(server: PluginServerInterface, server_return_code: int):
     kill_server(server)
