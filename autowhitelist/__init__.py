@@ -4,13 +4,6 @@ import asyncio
 import traceback
 from mcdreforged.api.all import *
 
-PLUGIN_METADATA = {
-    'id': 'autowhitelist',
-    'version': '0.0.1',
-    'name': 'autowhitelist',
-    "description": "Automaticly add whitelist by tests",
-    "author": "zsx",
-}
 CONFIG_FILE = 'config/awl.json'
 
 class Config(Serializable):
@@ -35,9 +28,9 @@ except:
 def kill_server(server):
     server.logger.info("autowhitelist正在停止服务...")
 
-async def start(server):
-    key = server.key
-    url = server.url
+async def start(server,config):
+    key = config.key
+    url = config.url
     while True:
         try:
             async with websockets.connect(url) as websocket:

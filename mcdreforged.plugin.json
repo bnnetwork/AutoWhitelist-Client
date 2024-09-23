@@ -1,0 +1,7 @@
+{
+    "id": "autowhitelist",
+    "version": "0.0.1",
+    "name": "autowhitelist",
+    "description": "Automaticly add whitelist by tests",
+    "author": "zsx"
+}
