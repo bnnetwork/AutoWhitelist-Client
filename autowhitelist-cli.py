@@ -61,19 +61,16 @@ async def start(url):
                 recv_text = await websocket.recv()
                 data = eval(recv_text)
                 if(data["code"] == -1):
-                    logger.critical("密钥错误，请再次检查")
-                    input("按Enter键退出")
+                    logger.critical("密钥不存在，请再次检查")
                     sys.exit(1)
                 elif(data["code"] == -2):
                     logger.critical("客户端重复连接，请勿同时运行两个客户端")
-                    input("按Enter键退出")
                     sys.exit(1)
                 elif data["code"] == 1:
                     server_name = data["server_name"]
                     logger.success("连接成功，服务器%s已上线"%server_name)
                 else:
                     logger.error("未知的响应："+recv_text)
-                    input("按Enter键退出")
                     sys.exit(1)
                 while True:
                     recv_text = await websocket.recv()
@@ -85,7 +82,7 @@ async def start(url):
                             for i in whitelist:
                                 if i["name"] == player_name:
                                     logger.error("白名单添加失败：该玩家已被添加")
-                                    continue
+                                    break
                             if isOnline == "True":
                                 # 如果是正版服则从mojang官网获取正版uuid
                                 respond = httpx.get("https://api.mojang.com/users/profiles/minecraft/" + player_name)
