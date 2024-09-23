@@ -1,9 +1,23 @@
-# Autowhitelist-CLI
+# Autowhitelist
 
-本仓库存放的是autowhitelist的客户端，服务端由于安全原因暂不开放。
+## 简介
 
-您可从release页面下载已构建的版本直接使用。
+想对用户进行筛选？想防止熊孩子进村？想让用户更熟悉你的服规？那么你一定不能错过这个插件。
 
-国内用户可通过[阿里云盘镜像](https://drive.bnnet.com.cn/%E9%98%BF%E9%87%8C%E4%BA%91%E7%9B%98/%E8%BD%AF%E4%BB%B6/autowhitelist)高速下载
+Autowhitelist是一个[MCDReforged](https://github.com/MCDReforged)插件，本插件可以让您通过发布问卷并让玩家回答的形式让玩家自助申请白名单，只需申请并填写key即可运行，无需任何复杂配置。
 
-使用教程：https://help.awl.bnnet.com.cn
+## 配置方法
+
+1.安装并运行一次以生成默认配置
+2.进入configs文件夹，找到awl.json
+3.填写申请好的key，如果有能力自行搭建问卷服务器则可修改url到自己的服务器上。
+4.大功告成，再次启动服务器即可使用
+
+## 反馈交流
+
+您可加入QQ群715519194进行交流，或者直接发送邮件至<zhishixiang@outlook.com>进行反馈。
+
+## 最后
+
+祝愿本插件能够减轻您的服务器管理负担，或增添更多丰富的玩法。
+本插件根据MIT协议进行开源。
