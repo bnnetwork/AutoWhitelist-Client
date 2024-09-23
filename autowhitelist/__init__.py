@@ -7,7 +7,7 @@ from mcdreforged.api.all import *
 CONFIG_FILE = 'config/awl.json'
 
 class Config(Serializable):
-    key: str = None
+    key: str = "None"
     url: str = "wss://awl.toho.red/ws"
 
 """
