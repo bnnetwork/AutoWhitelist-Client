@@ -1,3 +1,4 @@
+import os
 from time import sleep
 import websockets
 from loguru import logger
@@ -35,12 +36,15 @@ try:
     key = config['key']
     isOnline = config['isOnline']
 except:
-    logger.error("读取配置文件失败，请检查配置文件是否存在且格式是否正确")
-    assert ()
+    logger.error("读取配置文件失败，请检查配置文件是否存在且格式是否正确!")
+    sys.exit(1)
 try:
     with open("whitelist.json", "r", encoding='UTF-8') as f:
         whitelist = json.load(f)
     logger.info("读取白名单列表中")
+    if not os.access("whitelist.json", os.W_OK):
+        logger.error("没有whitelist.json的读写权限!")
+        sys.exit(1)
     for i in whitelist:
         logger.info("uuid:" + i['uuid'])
         logger.info("name:" + i['name'])
