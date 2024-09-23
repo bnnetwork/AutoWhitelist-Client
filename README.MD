@@ -13,6 +13,8 @@ Autowhitelist是一个[MCDReforged](https://github.com/MCDReforged/MCDReforged)�
 3.填写申请好的key，如果您有能力[自行搭建问卷服务器](https://github.com/zhishixiang/autowhitelist-server-rust)则可修改url到自己的服务器上。  
 4.大功告成，再次启动服务器即可使用  
 
+为什么没地方申请key？因为页面还没做好，如果您还能看到这条消息，那么请麻烦您入群申请（
+
 ## 反馈交流
 
 您可加入QQ群715519194进行交流，或者直接发送邮件至<zhishixiang@outlook.com>进行反馈。
