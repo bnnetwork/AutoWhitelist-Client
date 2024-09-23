@@ -32,7 +32,6 @@ except:
 """
 def kill_server(server):
     server.logger.info("autowhitelist正在停止服务...")
-    server_thread.terminate()
 
 async def start(server):
     while True:
