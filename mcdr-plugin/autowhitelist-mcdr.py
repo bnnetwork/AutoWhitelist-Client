@@ -11,10 +11,6 @@ PLUGIN_METADATA = {
     "description": "Automaticly add whitelist by tests",
     "author": "zsx",
 }
-whitelist = []
-playerdata = {}
-data = {}
-server_name = ""
 key = "1"
 url = "wss://awl.toho.red/ws"
 server_thread = None
