@@ -8,10 +8,10 @@ Autowhitelist是一个[MCDReforged](https://github.com/MCDReforged)插件，本�
 
 ## 配置方法
 
-1.安装并运行一次以生成默认配置
-2.进入configs文件夹，找到awl.json
-3.填写申请好的key，如果您有能力[自行搭建问卷服务器](https://github.com/zhishixiang/autowhitelist-server-rust)则可修改url到自己的服务器上。
-4.大功告成，再次启动服务器即可使用
+1.安装并运行一次以生成默认配置  
+2.进入configs文件夹，找到awl.json  
+3.填写申请好的key，如果您有能力[自行搭建问卷服务器](https://github.com/zhishixiang/  autowhitelist-server-rust)则可修改url到自己的服务器上。  
+4.大功告成，再次启动服务器即可使用  
 
 ## 反馈交流
 
@@ -19,5 +19,5 @@ Autowhitelist是一个[MCDReforged](https://github.com/MCDReforged)插件，本�
 
 ## 最后
 
-祝愿本插件能够减轻您的服务器管理负担，或增添更多丰富的玩法。
-本插件根据MIT协议进行开源。
+祝愿本插件能够减轻您的服务器管理负担，或增添更多丰富的玩法。  
+本插件根据MIT协议进行开源。  
