@@ -78,33 +78,29 @@ async def start(url):
                         if data["code"] == 2:
                             player_name = data["msg"]
                             logger.info("新玩家%s已通过答题，正在添加白名单"%player_name)
-                            player_not_exist = True
                             for i in whitelist:
                                 if i["name"] == player_name:
                                     logger.error("白名单添加失败：该玩家已被添加")
-                                    player_not_exist = False
-                                    break
+                                    continue
                             if isOnline == "True":
+                                # 如果是正版服则从mojang官网获取正版uuid
                                 respond = httpx.get("https://api.mojang.com/users/profiles/minecraft/" + player_name)
-                                if player_not_exist:
-                                    if respond.status_code == 204:
-                                        logger.error("白名单添加失败：该玩家不存在")
-                                        break
-                                    elif respond.status_code == 200:
-                                        mojangData = json.loads(respond.read())
-                                        playerdata['uuid'] = mojangData['id']
-                                        playerdata['name'] = mojangData['name']
-                                        for i in whitelist:
-                                            if i["uuid"] == playerdata['uuid']:
-                                                logger.error("白名单添加失败：该玩家已被添加")
-                                                break
+                                if respond.status_code == 204:
+                                    logger.error("白名单添加失败：该玩家不存在")
+                                    continue
+                                elif respond.status_code == 200:
+                                    mojangData = json.loads(respond.read())
+                                    playerdata['uuid'] = mojangData['id']
+                                    playerdata['name'] = mojangData['name']
+                                    for i in whitelist:
+                                        if i["uuid"] == playerdata['uuid']:
+                                            logger.error("白名单添加失败：该玩家已被添加")
+                                            continue
                                         whitelist.append(playerdata)
                             elif isOnline == "False":
-                                if player_not_exist:
-                                    playerdata['uuid'] = str(uuid.uuid4())
-                                    playerdata['name'] = player_name
-                                    whitelist.append(playerdata)
-                            if player_not_exist:
+                                playerdata['uuid'] = str(uuid.uuid4())
+                                playerdata['name'] = player_name
+                                whitelist.append(playerdata)
                                 with open("whitelist.json", "w", encoding='UTF-8') as f:
                                     strwhitelist = str(whitelist).replace("'", "\"").replace(r"\n", "")
                                     f.write(strwhitelist)
