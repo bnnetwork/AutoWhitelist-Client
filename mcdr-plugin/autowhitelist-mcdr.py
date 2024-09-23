@@ -75,7 +75,7 @@ async def start(server):
             server.logger.error(f"发生错误：{e}，正在尝试重新连接...")
             await asyncio.sleep(5)
 
-@new_thread('Autowhitelist Server Thread')
+@new_thread('Autowhitelist Client Thread')
 def start_thread(server):
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
