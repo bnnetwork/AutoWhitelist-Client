@@ -14,7 +14,7 @@ version = "v0.0.5"
 whitelist = []
 playerdata = {}
 data = {}
-server_name = ""
+server_name = "847f0db2-fe17-45ca-96e0-e65b22784fcf"
 """
 try:
     logger.info("正在检测是否有新版本，请稍后")
@@ -54,6 +54,7 @@ except:
 
 
 async def start(url):
+    
     while True:
         try:
             async with websockets.connect(url) as websocket:
